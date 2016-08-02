@@ -11,13 +11,14 @@
 [Docker](https://www.docker.com/)는 2013년 등장한 새로운 오픈소스 가상화 도구이다. VirtualBox나 Parallels같은 가상머신과 유사한 기능을 가지고 있지만 그 구조의 특징 때문에 훨씬 가벼운 배포가 가능하다는 이점이 있다. 가상머신의 경우, 우리가 원하는 프로그램을 수행하기 위해 guest OS를 반드시 설치해줘야 하지만 Docker는 Linux의 Container(LXC, 최근엔 libcontainer로 LXC를 대체함)를 사용하기 때문에 별도의 OS 설치없이도 가상환경을 구축할 수 있다.
 
 ![figure1](http://pyrasis.com/assets/images/Docker-HOWTO/vm.png) ![figure2](http://pyrasis.com/assets/images/Docker-HOWTO/docker.png)
-
+(source| left: http://pyrasis.com/assets/images/Docker-HOWTO/vm.png, right: http://pyrasis.com/assets/images/Docker-HOWTO/docker.png)
 왼쪽 그림과 같이 가상머신은 그 자체로 하나의 완전한 컴퓨터이기 때문에 호스트 머신과는 별개의 OS를 반드시 포함한다. 반면, Docker(오른쪽)는 Host OS로 직접 시스템콜을 날리기 때문에 별도의 OS가 필요하지 않으며, 그 외 호스트와는 별도로 운영하고자 하는 프로그램만 설치 및 관리한다. 이 덕분에 배포 시 이미지 크기가 크게 줄어들 뿐만 아니라 가상화 레이어(하이퍼바이저)가 없기 때문에 파일시스템, 네트워크 속도 등 전반적인 성능이 호스트 머신과 유사할 정도로 향상되었다.
 
 #### 리눅스 컨테이너
 어쨌든 Docker도 가상환경을 생성, 실행하기 때문에 호스트 OS 위에 별도의 레이어가 추가적으로 필요하다. 하지만 이 레이어는 가상머신의 하이퍼바이저와는 다르다. 컴퓨터를 통째로 가상화하는 가상머신은 물리적 자원의 할당(Hardware virtualization)이 필요하지만, LXC는 일종의 증강된 chroot로서 가상화보다는 격리의 개념으로 봐야한다. LXC는 리눅스 커널의 cgroups (하드웨어 자원 할당)와 namespaces(계정, 파일시스템 등)을 사용하여 가상 공간을 제공한다.
 
 ![figure3](http://pyrasis.com/assets/images/DockerForTheReallyImpatientChapter01/8.png)
+(source: http://pyrasis.com/assets/images/DockerForTheReallyImpatientChapter01/8.png)
 하지만 위와 같이 LXC는 격리된 공간만을 제공할 뿐 부가적인 기능이 없기 때문에, Docker는 LXC를 기반으로 하여 이미지 및 컨테이너 생성, 관리, 실행 등 다양한 기능을 추가한 레이어를 만들었다. 가상머신의 하이퍼바이저와는 확연히 다른 역할을 수행하는 것을 알 수 있다. 이를 Docker 엔진이라고 하며, 최근에는 LXC대신 libcontainer를 실행 드라이버(exec engine)로 사용한다 (LXC는 lxc로, libcontainer는 native로 표시됨).
 
 #### Docker 이미지, 컨테이너
@@ -152,6 +153,7 @@ docker를 사용하여 우분투 이미지를 만들고 필요한 모든 패키�
 
 ## Nvidia Docker 설치
 ![figure4](https://cloud.githubusercontent.com/assets/3028125/12213714/5b208976-b632-11e5-8406-38d379ec46aa.png)
+(source: https://cloud.githubusercontent.com/assets/3028125/12213714/5b208976-b632-11e5-8406-38d379ec46aa.png)
 
 nvidia docker는 크게 nvidia-docker executable과 nvidia/cuda dockerfile들로 구분할 수 있다. [Github 공식 페이지](https://github.com/NVIDIA/nvidia-docker)(환경/도구 별 dockerfile들이 모여있음)에서 다음과 같이 본 도구의 장점을 설명하는데 heterogeneous driver/toolkit environments가 가장 큰 장점일 듯 싶다.
 
