@@ -1,6 +1,6 @@
 # Ubuntu 14.04 + Nvidia Docker를 사용한 GPU enabled Caffe 개발환경 구축
 
-* 2016.7.19. 진준호 *
+##### 2016.7.19. 진준호
 - 최근 업데이트 일자: 2016.8.2.
 - 개발환경
 	- 호스트: Ubuntu 14.04, Docker 1.11.2, Nvidia-docker 1.0.0-rc
@@ -415,10 +415,13 @@ $ vi Makefile.config
 64 # PYTHON_INCLUDE := /usr/include/python2.7 \	# 원래코드 주석처리
 65 # 	/usr/lib/python2.7/dist-packages/numpy/core/include
 ..
-68 ANACONDA_HOME := $(HOME)/.miniconda	# 주석 제거 후 conda 환경 지정
+68 ANACONDA_HOME := $(HOME)/.miniconda2	# 주석 제거 후 conda 환경 지정
 69 PYTHON_INCLUDE := $(ANACONDA_HOME)/include \
 70 	$(ANACONDA_HOME)/include/python2.7 \
 71 	$(ANACONDA_HOME)/lib/python2.7/site-packages/numpy/core/include \
+..
+79 # PYTHON_LIB := /usr/lib	# 주석 처리
+80 PYTHON_LIB := $(ANACONDA_HOME)/lib	# 주석 제거
 ..
 ```
 
@@ -429,7 +432,7 @@ $ make pycaffe
 $ make test
 $ make runtest
 # bashrc 파일 수정 (마지막에 추가)
-> # Caffe Environment Variables
+> # Caffe Environment Variables (.bashrc)
 > export CAFFE_ROOT=/opt/sources/caffe
 > export PYCAFFE_ROOT=$CAFFE_ROOT/python
 > export PYTHONPATH=$PYCAFFE_ROOT:$PYTHONPATH
@@ -465,11 +468,11 @@ parser.add_argument(
 #Classify
 start = time.time()
 scores = classifier.predict(inputs, not args.center_only).flatten()
-print("Done in %.2f s."(time.time() - start))
+print("Done in %.2f s." % (time.time() - start))
 
 if args.print_results:
   with open(args.labels_file) as f:
-    labels_df = pd.DataFrame([{'synset_id':l.strip().split(' ')[0], 'name': ' '.join(l.strip().split(' ')[1:]).split(',')[0]} for l in f.readlines()])
+    labels_df = pandas.DataFrame([{'synset_id':l.strip().split(' ')[0], 'name': ' '.join(l.strip().split(' ')[1:]).split(',')[0]} for l in f.readlines()])
     labels = labels_df.sort('synset_id')['name'].values
 
     indices =(-scores).argsort()[:5]
@@ -939,15 +942,24 @@ Saving results into foo
 실행 결과로 아래와 같이 출력되는 것과 `foo.npy`가 만들어지는 것을 확인한다.
 
 ## Docker Hub에 등록하기
-위 과정까지 마무리하며 caffe 개발환경 구축을 완료하였다. 쉽게 이 개발환경을 공유, 사용할 수 있도록 Docker Hub에 이 개발환경을 이미지로 등록한다. 위에서 만든 컨테이너를 이미지로 변환하는데 시간이 꽤 오래걸리기 때문에 기다려야 한다.
+위 과정까지 마무리하며 caffe 개발환경 구축을 완료하였다. 쉽게 이 개발환경을 공유, 사용할 수 있도록 Docker Hub에 이 개발환경을 이미지로 등록한다. 하지만, 실제로는 모든 과정을 거친 후 저장한 이미지의 사이즈가 너무 커서 직접 push하지 못했고, 단계 별로 나눠서 여러 개의 이미지로 저장했다. (cuda 설치 버전, opencv 설치버전, caffe 설치버전 총 3 개의 태그로 구분하여 이미지 생성) opencv 2.4.x 버전을 쓰고싶다면 cuda tag를 달아서 pull 받으면 되고(`docker pull junho/caffe:cuda7.5`), 다른 caffe branch로 작업하고 싶다면 opencv tag를 pull 받아와서 새로 작업하면 된다. 각 설치 방법은 버전만 다를 뿐 위의 설명과 큰 차이는 없을 것이다.
+
 ```bash
 $ exit # docker 컨테이너에서 나온다
 $ docker ps -a # docker container 확인
-$ docker commit -m "Installed caffe, cuda, cudnn, opencv" -a "Junho Jin" caffe junho/caffe:v1
+$ docker commit -m "Installed Caffe for Deep Learning" -a "Junho Jin" caffe junho/caffe:caffe
 $ docker images # 생성된 이미지 확인
 $ docker login # docker hub에 로그인, 아이디와 비밀번호 입력 필요
 $ docker search junho/caffe # 이미 같은 이름의 이미지가 등록되어있는지 확인한다
 $ docker push junho/caffe
+$ docker images
+> REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE
+> junho/caffe         caffe               5e90fdb3e3be        27 minutes ago      7.678 GB
+> junho/caffe         opencv              d7b4e06f26a7        About an hour ago   6.359 GB
+> junho/caffe         cuda7.5             f3e153189c84        About an hour ago   5.723 GB
+> junho/caffe         latest              92d181b8db04        3 hours ago         1.251 GB
+> nvidia/cuda         7.5-devel           248b8f2365f4        6 days ago          1.229 GB
+
 ```
 
 
